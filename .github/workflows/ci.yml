@@ -36,7 +36,7 @@ jobs:
 
       - name: ⚙️ Install Dependencies
         run: |
-          npm install -g expo-cli@latest expo-doctor
+          npm install -g eas-cli@latest expo-cli@latest expo-doctor
           npm ci --legacy-peer-deps --prefer-offline --no-audit
 
       - name: 🔑 Expo Authentication
@@ -60,7 +60,11 @@ jobs:
           npx expo-doctor || echo "Expo doctor check completed with warnings"
           npx expo prebuild
 
-      - name: 🚀 Deploy to Expo
+      - name: 🚀 Deploy with EAS Update
         if: github.ref == 'refs/heads/main'
         run: |
-          npx expo publish --non-interactive
+          npx eas-cli@latest build --platform all --non-interactive
+          npx eas-cli@latest update --branch production --message "GitHub Actions: ${{ github.sha }}"
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          EAS_PROJECT_ID: ${{ secrets.EXPO_PROJECT_ID }}
