@@ -1,0 +1,65 @@
+name: Expo CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test-and-deploy:
+    name: Test and Deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: 🛑 Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@0.11.0
+        with:
+          access_token: ${{ github.token }}
+
+      - name: 📦 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🟣 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: 🔍 Debug Info
+        run: |
+          node -v
+          npm -v
+          npm config list
+
+      - name: ⚙️ Install Dependencies
+        run: |
+          npm install -g expo-cli@latest
+          npm ci --legacy-peer-deps --prefer-offline --no-audit
+
+      - name: 🔑 Expo Authentication
+        if: github.ref == 'refs/heads/main'
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          npx expo whoami || npx expo login --token $EXPO_TOKEN
+
+      - name: 🧪 Run Tests (if configured)
+        run: |
+          if grep -q '"test":' package.json; then
+            npm test -- --watchAll=false --passWithNoTests
+          else
+            echo "No test script found in package.json, skipping tests"
+          fi
+
+      - name: 🏗️ Build Project
+        run: |
+          npx expo doctor
+          npx expo prebuild
+
+      - name: 🚀 Deploy to Expo
+        if: github.ref == 'refs/heads/main'
+        run: |
+          npx expo publish --non-interactive
