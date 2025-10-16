@@ -1,29 +1,57 @@
-import React from 'react';
-import { View, Text, Pressable } from 'react-native';
+// src/features/auth/components/LoginForm.tsx
+import { View, TextInput, Text, TouchableOpacity } from 'react-native';
+import { Formik } from 'formik';
+  import { loginSchema } from '../validations/loginschema';
 import { useAuthStore } from '@/state/useAuth';
-export const LoginScreen = () => {
-const {login, } = useAuthStore();
 
+export default function LoginForm() {
+  const { login } = useAuthStore();
 
-  const handleLogin = () => {
-    // En una app real, aquí llamarías a tu API y recibirías el usuario
-    const mockUser = {
-      id: "1",
-      name: "Miguel Contreras",
-      email: "miguel@example.com",
-    };
-    login(mockUser);
-  };
   return (
-    <View className="flex-1 items-center justify-center bg-background ">
-      <Text className="text-2xl font-bold text-red-500 mb-6">Bienvenido 👋</Text>
+    <Formik
+      initialValues={{ email: '', password: '' }}
+      validationSchema={loginSchema}
+      onSubmit={() => {
+        login({email: '', password: '', id: '', name: '',}); // simula autenticación
+      }}
+    >
+      {({ handleChange, handleSubmit, values, errors, touched }) => (
+        <View className="p-6">
+          <Text className="text-xl font-bold mb-4">Iniciar sesión</Text>
 
-      <Pressable
-        className="bg-primary px-4 py-2 rounded-xl"
-        onPress={() => handleLogin()}
-      >
-        <Text className="text-black font-semibold text-lg">Entrar</Text>
-      </Pressable>
-    </View>
+          <TextInput
+            placeholder="Correo electrónico"
+            value={values.email}
+            onChangeText={handleChange('email')}
+            className="border border-gray-300 rounded-xl p-3 mb-2"
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
+          {touched.email && errors.email && (
+            <Text className="text-red-500 text-sm">{errors.email}</Text>
+          )}
+
+          <TextInput
+            placeholder="Contraseña"
+            value={values.password}
+            onChangeText={handleChange('password')}
+            className="border border-gray-300 rounded-xl p-3 mt-3 mb-2"
+            secureTextEntry
+          />
+          {touched.password && errors.password && (
+            <Text className="text-red-500 text-sm">{errors.password}</Text>
+          )}
+
+          <TouchableOpacity
+            onPress={() => handleSubmit()}
+            className="bg-blue-600 py-3 rounded-xl mt-5"
+          >
+            <Text className="text-center text-white font-semibold">
+              Entrar
+            </Text>
+          </TouchableOpacity>
+        </View>
+      )}
+    </Formik>
   );
-};
+}
