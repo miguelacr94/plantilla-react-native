@@ -1,14 +1,23 @@
 module.exports = function (api) {
   api.cache(true);
   return {
-    presets: ['babel-preset-expo'],
+    presets: [
+      ['babel-preset-expo', { jsxImportSource: 'nativewind' }],
+      'nativewind/babel'
+    ],
     plugins: [
-      'nativewind/babel',
       [
         'module-resolver',
         {
           root: ['./src'],
-          extensions: ['.ios.js', '.android.js', '.js', '.ts', '.tsx', '.json'],
+          extensions: [
+            '.ios.js',
+            '.android.js',
+            '.js',
+            '.ts',
+            '.tsx',
+            '.json'
+          ],
           alias: {
             '@': './src',
             '@core': './src/core',
@@ -16,12 +25,12 @@ module.exports = function (api) {
             '@app': './src/app',
             '@navigation': './src/navigation',
             '@services': './src/services',
-            '@state': './src/state',
+            '@state': './src/state'
           },
         },
       ],
+      // 👇 Este plugin debe ir al final y fuera del array anterior
       'react-native-reanimated/plugin',
-      'react-native-worklets/plugin',
     ],
   };
 };
